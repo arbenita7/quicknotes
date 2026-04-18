@@ -1,9 +1,12 @@
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
+  Image,
   Platform,
   StyleSheet,
   Text,
@@ -20,65 +23,133 @@ function InitialAvatar({ letter }: { letter: string }) {
   );
 }
 
-const getInitialsFromEmail = (email?: string) => {
-  if (!email) return "US";
-
-  const namePart = email.split("@")[0];
-  const parts = namePart.split(/[._-]/);
-
-  if (parts.length >= 2) {
-    return (
-      parts[0][0].toUpperCase() + parts[1][0].toUpperCase()
-    );
-  }
-
-  return namePart.slice(0, 2).toUpperCase();
-};
-
 export default function Profile() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [notesCount, setNotesCount] = useState(0);
 
-  const initials = getInitialsFromEmail(user?.email);
   const email = user?.email ?? "—";
-  const plan = "Free Tier";
-  const joined = "February 2026";
+
+  const displayName =
+    name || user?.email?.split("@")[0] || "User";
+
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/(auth)/login");
     }
-  }, [user, loading, router]);
+  }, [user, loading]);
 
   useEffect(() => {
     if (user) {
-      setName(user.email?.split("@")[0] || "");
+      fetchProfile();
       fetchNotesCount();
     }
   }, [user]);
 
+  /* ================= FETCH PROFILE ================= */
+  const fetchProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("name, avatar_url")
+      .eq("id", user?.id)
+      .single();
+
+    if (!error && data) {
+      setName(data.name || "");
+      setAvatar(data.avatar_url || null);
+    }
+  };
+
+  /* ================= PICK IMAGE ================= */
+  const pickImage = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!res.canceled) {
+      uploadImage(res.assets[0].uri);
+    }
+  };
+
+  /* ================= UPLOAD ================= */
+  const uploadImage = async (uri: string) => {
+    if (!user) return;
+
+    try {
+      const fileName = `${user.id}.jpg`;
+
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const { error } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, blob, { upsert: true });
+
+      if (error) {
+        Alert.alert("Error", "Upload failed");
+        return;
+      }
+
+      const { data } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(fileName);
+
+      const publicUrl = data.publicUrl;
+
+      setAvatar(publicUrl);
+
+      // save në DB
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        avatar_url: publicUrl,
+      });
+
+    } catch (e) {
+      Alert.alert("Error", "Something went wrong");
+    }
+  };
+
+  /* ================= SAVE NAME ================= */
+  const handleSave = async () => {
+    if (!user) return;
+
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      name: name,
+      avatar_url: avatar,
+    });
+
+    if (error) {
+      Alert.alert("Error", "Could not save profile");
+    } else {
+      Alert.alert("Saved!");
+      setEditing(false);
+    }
+  };
+
   const fetchNotesCount = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("notes")
       .select("id")
       .eq("user_id", user.id);
 
-    if (error) {
-      console.log("ERROR:", error);
-    } else {
-      setNotesCount(data?.length || 0);
-    }
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.replace("/(auth)/login");
+    setNotesCount(data?.length || 0);
   };
 
   if (loading) {
@@ -93,10 +164,17 @@ export default function Profile() {
     <View style={styles.container}>
       {Platform.OS === "web" && <Header />}
 
-      {/* CARD */}
       <View style={styles.card}>
-        <InitialAvatar letter={initials} />
+        {/* AVATAR CLICK */}
+        <TouchableOpacity onPress={pickImage}>
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatar} />
+          ) : (
+            <InitialAvatar letter={initials} />
+          )}
+        </TouchableOpacity>
 
+        {/* NAME */}
         {editing ? (
           <TextInput
             value={name}
@@ -106,12 +184,15 @@ export default function Profile() {
             placeholderTextColor="#64748b"
           />
         ) : (
-          <Text style={styles.name}>
-            {name || "No name set"}
-          </Text>
+          <Text style={styles.name}>{displayName}</Text>
         )}
 
-        <TouchableOpacity onPress={() => setEditing(!editing)}>
+        {/* EDIT BUTTON */}
+        <TouchableOpacity
+          onPress={() =>
+            editing ? handleSave() : setEditing(true)
+          }
+        >
           <Text style={styles.editBtn}>
             {editing ? "Save" : "Edit profile"}
           </Text>
@@ -122,32 +203,27 @@ export default function Profile() {
         <View style={styles.infoRow}>
           <View style={styles.badge}>
             <Text style={styles.badgeText}>PLAN</Text>
-            <Text style={styles.badgeValue}>{plan}</Text>
+            <Text style={styles.badgeValue}>Free Tier</Text>
           </View>
 
           <View style={styles.badge}>
             <Text style={styles.badgeText}>JOINED</Text>
-            <Text style={styles.badgeValue}>{joined}</Text>
+            <Text style={styles.badgeValue}>
+              February 2026
+            </Text>
           </View>
         </View>
-
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutText}>Sign out</Text>
-        </TouchableOpacity>
       </View>
 
-      {/* MANAGE NOTES */}
       <TouchableOpacity
         style={styles.manageBox}
         onPress={() => router.push("/notes")}
       >
-        <Text style={styles.manageText}>Manage My Notes</Text>
+        <Text style={styles.manageText}>
+          Manage My Notes
+        </Text>
       </TouchableOpacity>
 
-      {/* NOTES COUNT */}
       <View style={styles.empty}>
         <Text style={styles.emptyText}>
           You have {notesCount}{" "}
@@ -162,7 +238,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#060b16",
   },
   center: {
     flex: 1,
@@ -176,13 +252,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "#1d4ed8",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+    overflow: "hidden",
+    marginTop: 20,
   },
   avatarText: {
     color: "#fff",
@@ -199,13 +277,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   badge: {
-    backgroundColor: "#020617",
+    backgroundColor: "#0f172a",
     padding: 12,
     borderRadius: 12,
     minWidth: 120,
+    borderWidth: 1,
+    borderColor: "#1e293b",
   },
   badgeText: {
-    color: "#9ca3af",
+    color: "#c42734",
     fontSize: 12,
   },
   badgeValue: {
@@ -213,22 +293,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 4,
   },
-  logoutBtn: {
-    borderWidth: 1,
-    borderColor: "#ef4444",
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-  },
-  logoutText: {
-    color: "#ef4444",
-    fontWeight: "600",
-  },
   manageBox: {
     marginTop: 16,
     padding: 16,
     borderRadius: 14,
     backgroundColor: "#020617",
+    borderWidth: 1,
+    borderColor: "#1e293b",
   },
   manageText: {
     color: "#e5e7eb",
@@ -240,6 +311,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#020617",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#1e293b",
   },
   emptyText: {
     color: "#9ca3af",
@@ -258,9 +331,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     width: "100%",
     marginBottom: 8,
+    backgroundColor: "#0f172a",
   },
   editBtn: {
     color: "#3b82f6",
     fontWeight: "600",
+    marginBottom: 8,
   },
 });

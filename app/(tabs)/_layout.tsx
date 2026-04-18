@@ -1,7 +1,7 @@
-import {View,Text, Platform } from 'react-native'
-import { Tabs, } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
-import {useAuth} from "@/context/AuthContext"
+import { useAuth } from "@/context/AuthContext";
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs, } from 'expo-router';
+import { Platform, Text, View } from 'react-native';
 
 
 
@@ -18,15 +18,11 @@ export default function TabLayout() {
   }
   return (
     <>
-      {/* ✅ WEB → Header lart 
-      {Platform.OS === 'web' && <Header />*/}
 
       <Tabs
         screenOptions={{
           headerShown: false,
 
-          // ✅ WEB: fsheh tab-bar
-          // ✅ MOBILE: tab-bar normal poshtë
           tabBarStyle:
             Platform.OS === 'web'
               ? { display: 'none' }
@@ -57,13 +53,32 @@ export default function TabLayout() {
             ),
           }}
         />
-        
-         <Tabs.Screen
+
+        <Tabs.Screen
+          name="stats"
+          options={{
+            title: 'Statistic',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="stats-chart-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="person-outline" size={size} color={color} />
+            ),
+          }}
+        />
+        
+         <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'Settings',
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings-outline" size={size} color={color} />
             ),
           }}
         />

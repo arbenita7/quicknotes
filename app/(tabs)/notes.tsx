@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -22,6 +23,7 @@ type Note = {
 
 export default function Notes() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [title, setTitle] = useState("");
@@ -39,35 +41,47 @@ export default function Notes() {
 
   if (!user) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <Text style={{ color: "#999" }}>Please login</Text>
+      <View style={styles.container}>
+        {Platform.OS === "web" && <Header />}
+
+        <View style={styles.center}>
+          <Text style={styles.loginText}>
+            Duhet me u kyç për me përdor Notes
+          </Text>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push("/login")}
+          >
+            <Text style={styles.buttonText}>Shko te Login</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   const fetchNotes = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  const { data, error } = await supabase
-    .from("notes")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("notes")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    console.log("ERROR:", error);
-  } else {
-    setNotes(data);
-  }
+    if (error) {
+      console.log("ERROR:", error);
+    } else {
+      setNotes(data);
+    }
 
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
   const saveNote = async () => {
     if (!title.trim()) return;
-  
 
     setLoading(true);
 
@@ -89,14 +103,12 @@ export default function Notes() {
     setLoading(false);
   };
 
-  
   const editNote = (note: Note) => {
     setTitle(note.title);
     setContent(note.content ?? "");
     setEditingId(note.id);
   };
 
-  
   const deleteNote = async (id: string) => {
     setLoading(true);
 
@@ -111,7 +123,6 @@ export default function Notes() {
     setContent("");
     setEditingId(null);
   };
-
 
   return (
     <View style={styles.container}>
@@ -146,13 +157,11 @@ export default function Notes() {
       {/* LIST */}
       <FlatList
         data={notes}
-        keyExtractor={(item) => item.id} // ✅ FIX
+        keyExtractor={(item) => item.id}
         refreshing={loading}
         onRefresh={fetchNotes}
         ListEmptyComponent={
-          <Text style={{ color: "#777", textAlign: "center", marginTop: 40 }}>
-            No notes
-          </Text>
+          <Text style={styles.empty}>No notes</Text>
         }
         renderItem={({ item }) => (
           <View style={styles.note}>
@@ -180,19 +189,28 @@ export default function Notes() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#060b16",
+    backgroundColor: '#060b16',
     padding: 16,
+  },
+  center: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loginText: {
+    color: "#999",
+    marginBottom: 15,
   },
   form: {
     marginBottom: 16,
+    marginTop: 50
   },
   input: {
     borderWidth: 1,
-    borderColor: "#666",
+    borderColor: "#3d3d3d",
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
@@ -207,6 +225,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  empty: {
+    color: "#777",
+    textAlign: "center",
+    marginTop: 40,
   },
   note: {
     backgroundColor: "#2f2a7a",

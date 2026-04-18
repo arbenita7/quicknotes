@@ -1,35 +1,53 @@
+import Header from "@/components/Header";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
+  Platform,
   Pressable,
   StyleSheet,
-  Platform,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { useState } from "react";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/context/AuthContext";
-import Header from "@/components/Header";
 
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState(""); // ✅ SHTUAR
 
   const { signUp } = useAuth();
   const router = useRouter();
 
   const handleRegister = async () => {
-    if (!email || !password || !confirmPassword) return;
-    if (password !== confirmPassword) return;
+    setError(""); 
 
-    await signUp(email, password);
-    router.replace("/(auth)/verify"); 
+    if (!email || !password || !confirmPassword) {
+      setError("Ploteso te gjitha fushat");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password duhet me pas të paktën 6 karaktere");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwordet nuk përputhen");
+      return;
+    }
+
+    try {
+      await signUp(email, password);
+      router.replace("/(auth)/verify");
+    } catch (err:any) {
+      setError(err.message);
+    }
   };
 
   return (
     <View style={styles.container}>
-
       {Platform.OS === "web" && <Header />}
 
       <View style={styles.content}>
@@ -59,12 +77,20 @@ export default function Register() {
           secureTextEntry
         />
 
+        {error ? (
+          <Text style={{ color: "red", marginBottom: 10 }}>
+            {error}
+          </Text>
+        ) : null}
+
         <Pressable style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
         </Pressable>
 
         <Pressable onPress={() => router.push("/login")}>
-          <Text style={styles.link}>Already have an account? Login</Text>
+          <Text style={styles.link}>
+            Already have an account? Login
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -74,7 +100,8 @@ export default function Register() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#060b16',
+    padding: 16,
   },
   content: {
     flex: 1,
@@ -98,7 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "#22c55e",
     padding: 14,
     borderRadius: 8,
     alignItems: "center",

@@ -1,6 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native'
-import { useRouter, usePathname, Href } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { Href, usePathname, useRouter } from 'expo-router'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 
 export default function Header() {
   const router = useRouter()
@@ -41,7 +41,9 @@ export default function Header() {
       <View style={styles.tabs}>
         <Tab label="Home" icon="home-outline" route="/" />
         <Tab label="Notes" icon="document-text-outline" route="/notes" />
+        <Tab label="Statistic" icon="stats-chart-outline" route="/stats" />
         <Tab label="Profile" icon="person-outline" route="/profile" />
+        <Tab label="Settings" icon="settings-outline" route="/settings" />
       </View>
     </View>
   )

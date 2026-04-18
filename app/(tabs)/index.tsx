@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Platform } from 'react-native'
 import Header from '@/components/Header'
+import { Platform, StyleSheet, Text, View } from 'react-native'
 
 export default function Home() {
   return (
@@ -59,7 +59,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: 16,
     backgroundColor: '#060b16',
   },
 
@@ -68,6 +68,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#e5e7eb',
     marginBottom: 12,
+    marginTop: 40
   },
 
   subtitle: {
