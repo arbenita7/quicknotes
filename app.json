@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "quicknotes",
+    "name": "Quicknotes",
     "slug": "quicknotes",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -22,6 +22,8 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "name": "Quicknotes",
+      "shortName": "Quicknotes",
       "output": "static",
       "favicon": "./assets/images/app-icon.png"
     },
