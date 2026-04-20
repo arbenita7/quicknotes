@@ -1,9 +1,10 @@
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
+import { Stack, } from "expo-router";
 import {
-  View,
   Text,
+  View,
 } from "react-native";
-import { Stack, } from "expo-router"
-import { AuthProvider, useAuth } from "@/context/AuthContext"
 
 function RootLayoutNav() {
   const { user, loading } = useAuth()
@@ -27,7 +28,9 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootLayoutNav />
+      <ThemeProvider>
+        <RootLayoutNav />
+      </ThemeProvider>
     </AuthProvider>
   )
 }

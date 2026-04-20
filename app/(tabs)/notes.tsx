@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -24,6 +25,7 @@ type Note = {
 export default function Notes() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const {colors} =useTheme();
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [title, setTitle] = useState("");
@@ -125,7 +127,10 @@ export default function Notes() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[
+        styles.container,
+        { backgroundColor: colors.bg},
+      ]}>
       {Platform.OS === "web" && <Header />}
 
       {/* FORM */}

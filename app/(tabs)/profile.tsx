@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -26,6 +27,7 @@ function InitialAvatar({ letter }: { letter: string }) {
 export default function Profile() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -57,7 +59,6 @@ export default function Profile() {
     }
   }, [user]);
 
-  /* ================= FETCH PROFILE ================= */
   const fetchProfile = async () => {
     const { data, error } = await supabase
       .from("profiles")
@@ -71,7 +72,6 @@ export default function Profile() {
     }
   };
 
-  /* ================= PICK IMAGE ================= */
   const pickImage = async () => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -85,7 +85,7 @@ export default function Profile() {
     }
   };
 
-  /* ================= UPLOAD ================= */
+
   const uploadImage = async (uri: string) => {
     if (!user) return;
 
@@ -112,7 +112,6 @@ export default function Profile() {
 
       setAvatar(publicUrl);
 
-      // save në DB
       await supabase.from("profiles").upsert({
         id: user.id,
         avatar_url: publicUrl,
@@ -123,7 +122,6 @@ export default function Profile() {
     }
   };
 
-  /* ================= SAVE NAME ================= */
   const handleSave = async () => {
     if (!user) return;
 
@@ -161,11 +159,14 @@ export default function Profile() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[
+        styles.container,
+        { backgroundColor: colors.bg},
+      ]}>
       {Platform.OS === "web" && <Header />}
 
       <View style={styles.card}>
-        {/* AVATAR CLICK */}
+        
         <TouchableOpacity onPress={pickImage}>
           {avatar ? (
             <Image source={{ uri: avatar }} style={styles.avatar} />
@@ -187,7 +188,7 @@ export default function Profile() {
           <Text style={styles.name}>{displayName}</Text>
         )}
 
-        {/* EDIT BUTTON */}
+      
         <TouchableOpacity
           onPress={() =>
             editing ? handleSave() : setEditing(true)
@@ -209,7 +210,13 @@ export default function Profile() {
           <View style={styles.badge}>
             <Text style={styles.badgeText}>JOINED</Text>
             <Text style={styles.badgeValue}>
-              February 2026
+                {user?.created_at
+                   ? new Date(user.created_at).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+                 : "—"}
             </Text>
           </View>
         </View>

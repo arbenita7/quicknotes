@@ -1,9 +1,15 @@
-import Header from '@/components/Header'
-import { Platform, StyleSheet, Text, View } from 'react-native'
+import Header from '@/components/Header';
+import { useTheme } from "@/context/ThemeContext";
+import { Platform, StyleSheet, Text, View } from 'react-native';
 
 export default function Home() {
+  const {colors} =useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[
+        styles.container,
+        { backgroundColor: colors.bg},
+      ]}>
 
       {Platform.OS === 'web' && <Header />}
 

@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { supabase } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import {
@@ -16,6 +17,7 @@ const screenWidth = Dimensions.get("window").width;
 
 export default function Stats() {
   const { user } = useAuth();
+  const { colors} = useTheme();
 
   const [total, setTotal] = useState(0);
   const [today, setToday] = useState(0);
@@ -120,7 +122,10 @@ export default function Stats() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[
+        styles.container,
+        { backgroundColor: colors.bg},
+      ]}>
         {Platform.OS === "web" && <Header />}
       <Text style={styles.title}>Your Stats</Text>
 
@@ -177,7 +182,7 @@ export default function Stats() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#060b16',
+    backgroundColor:  '#060b16',
     padding: 16,
   },
   title: {
