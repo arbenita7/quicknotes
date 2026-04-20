@@ -24,7 +24,6 @@
     "@supabase/supabase-js": "^2.95.3",
     "expo": "~54.0.32",
     "expo-constants": "~18.0.13",
-    "expo-datetimepicker": "^1.0.3",
     "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
