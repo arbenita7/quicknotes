@@ -40,8 +40,7 @@ export default function Home() {
         <Text style={styles.cardTitle}>⚙️ Si funksionon?</Text>
         <Text style={styles.cardText}>
           Çdo shënim që krijon ruhet automatikisht
-          në pajisjen tënde. Nuk ke nevojë për login
-          apo internet.
+          në pajisjen tënde. 
         </Text>
       </View>
 
