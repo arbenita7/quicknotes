@@ -15,7 +15,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(""); // ✅ SHTUAR
+  const [error, setError] = useState("");
 
   const { signUp } = useAuth();
   const router = useRouter();
