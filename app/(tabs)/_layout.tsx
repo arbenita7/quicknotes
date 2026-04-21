@@ -1,12 +1,15 @@
 import { useAuth } from "@/context/AuthContext";
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, } from 'expo-router';
-import { Platform, Text, View } from 'react-native';
+import { Platform, Text, View, useWindowDimensions } from 'react-native';
+
 
 
 
 export default function TabLayout() {
   const { loading } = useAuth();
+  const {width} = useWindowDimensions();
+  const isMobile =width <768;
   
 
   if (loading) {
@@ -22,9 +25,8 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-
           tabBarStyle:
-            Platform.OS === 'web'
+            Platform.OS === 'web' && !isMobile
               ? { display: 'none' }
               : {},
 
