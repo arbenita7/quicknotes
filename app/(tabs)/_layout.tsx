@@ -24,9 +24,12 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
           tabBarStyle:
-            Platform.OS === 'web' 
-              ? { display: 'none' }
-              : {},
+            Platform.select ({
+              web: {
+                display: 'flex',
+              },
+              default:{}
+            }),
 
           tabBarLabelStyle: {
             fontSize: 12,
