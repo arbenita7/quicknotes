@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 20,
     textAlign: "center",
+    color:"#fff"
   },
   input: {
     borderWidth: 1,
@@ -123,6 +124,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
+    color:"#fff"
   },
   button: {
     backgroundColor: "#22c55e",
