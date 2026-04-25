@@ -175,7 +175,6 @@ export default function Profile() {
           )}
         </TouchableOpacity>
 
-        {/* NAME */}
         {editing ? (
           <TextInput
             value={name}

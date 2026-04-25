@@ -67,6 +67,8 @@ export default function Register() {
           onChangeText={setPassword}
           style={styles.input}
           secureTextEntry
+          returnKeyType='done'
+          onSubmitEditing={handleRegister}
         />
 
         <TextInput

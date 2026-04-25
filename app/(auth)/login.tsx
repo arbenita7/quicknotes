@@ -57,6 +57,8 @@ export default function Login() {
             onChangeText={setPassword}
             style={styles.input}
             secureTextEntry
+            returnKeyType='done'
+            onSubmitEditing={handleLogin}
             
           />
 

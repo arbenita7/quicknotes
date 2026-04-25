@@ -149,6 +149,8 @@ export default function Settings() {
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
                 style={styles.inputFlex}
+                returnKeyType='next'
+              
               />
               <Pressable onPress={() => setShowPassword(!showPassword)}>
                 <Text style={styles.eye}>
@@ -165,6 +167,8 @@ export default function Settings() {
                 onChangeText={setConfirmPassword}
                 secureTextEntry={!showPassword}
                 style={styles.inputFlex}
+                returnKeyType='done'
+                onSubmitEditing={handleChangePassword}
               />
             </View>
 
